@@ -1,0 +1,107 @@
+.TH "PP" "1" "April 2020" "preprocessor" "pp manual"
+.SH NAME
+pp \- shell preprocessor for text based files
+.SH SYNOPSIS
+.B pp
+[ \fB\-v\fR | \fB\-h\fR ]
+.br
+.B pp
+[ \fB\-f\fR ]
+.IR input-file
+[\fB\-o\fR \fIoutput-file\fR]
+.SH DESCRIPTION
+.B pp
+preprocesses text files before compilation (e.g using pandoc) by replacing marked shell one\-liner commands with their evaluated STDOUT.
+.PP
+\fIGNU\fR SED is required for this program as it provides the \fBe\fR command for evaluating the contents of the \fIpattern space\fR.
+.SH OPTIONS
+.TP
+.BR \-v ", " \-\-version
+Print version information and exit.
+.TP
+.BR \-h ", " \-\-help
+Print usage information and exit.
+.TP
+.BR \-f ", " \-\-force
+Force overwriting of output onto input file if no output file is given. Otherwise will prompt. 
+Force overwriting of output file if it already exists. Otherwise will exit.
+.TP
+\fB\-o\fR \fIoutput-file\fR
+Use the specified file for the output text.
+.SH SYNTAX
+.SS !!
+.PP
+Shell commands to be processed are on lines beginning with two exclamation marks \fB!!\fR. When \fBpp\fR is run on the file the text following the \fB!!\fR and before a newline is evaluated in \fIsh\fR. Therefore:
+.IP
+.nf
+\f[C]
+foo
+!! echo "Insert Text"
+bar
+\f[R]
+.PP
+becomes,
+.IP
+\f[C]
+foo
+Insert Text
+bar
+\f[R]
+.fi
+.PP
+There may be whitespace after the intial \fB!!\fR however no whitespace may separate the \fB!!\fR from the beginning of the line.
+.SS $IN and $OUT
+.PP
+In addition, there are two special variables defined in the processor, \fB$IN\fR and \fB$OUT\fR corresponding to the names of the \fIinput\fR file, and the \fIoutput\fR file respectively. These are replaced with the names of the files relative to the \fBPWD\fR \fIbefore\fR the shell command is evaluated. These can be used to reference the file or it's destination in any of the one\-liners, and can be chained recursively. As such:
+.IP
+.nf
+\f[C]
+foo
+!! cat "$IN"
+bar
+\f[R]
+.PP
+becomes,
+.IP
+\f[C]
+foo
+foo
+!! cat "$IN"
+bar
+bar
+\f[R]
+.fi
+.SH EXAMPLES 
+.PP 
+To import an html body, \fIbody.txt\fR, and title an html document with the name of the file \fIhome.html\fR, the input file would look like:
+.IP
+.nf
+\f[C]
+<title>
+!! echo "$IN" | sed -r 's/\..*$//'
+</title>
+<h1>Hello World!</h1>
+<body>
+!! cat "body.txt"
+</body>
+\f[R]
+.PP
+executing \fBpp\fR:
+.IP
+pp home.html
+.PP
+the file \fIhome.html\fR becomes,
+.IP
+\f[C]
+<title>
+home
+</title>
+<h1>Hello World!</h1>
+<body>
+Lorem ipsum,
+dolor sit amet.
+</body>
+\f[R]
+.fi
+.SH AUTHOR
+Joe Jenne <\fIjhjn.xyz\fR>
