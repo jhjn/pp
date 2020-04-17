@@ -1,17 +1,18 @@
 .TH "PP" "1" "April 2020" "preprocessor" "pp manual"
 .SH NAME
-pp \- shell preprocessor for text based files
+pp \- the text preprocessor
 .SH SYNOPSIS
 .B pp
-[ \fB\-v\fR | \fB\-h\fR ]
+[\fB\-v\fR|\fB\-\-version\fR] 
+[\fB\-h\fR|\fB\-\-help\fR]
 .br
 .B pp
-[ \fB\-f\fR ]
+[\fB\-f\fR|\fB\-\-force\fR]
 .IR input-file
 [\fB\-o\fR \fIoutput-file\fR]
 .SH DESCRIPTION
 .B pp
-preprocesses text files before compilation (e.g using pandoc) by replacing marked shell one\-liner commands with their evaluated STDOUT.
+preprocesses text files before final compilation (e.g using pandoc) by replacing marked shell one\-liner commands with their evaluated STDOUT.
 .PP
 \fIGNU\fR SED is required for this program as it provides the \fBe\fR command for evaluating the contents of the \fIpattern space\fR.
 .SH OPTIONS
