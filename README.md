@@ -17,12 +17,12 @@ This processor has one simple rule and two variables that together offer a large
 
 **Example**:
 ~~~
-$ cat foo.bar
+~$ cat foo.bar
 foo
 !! echo "${PWD}$IN"
 bar
 
-$ pp foo.bar && cat foo.bar
+~$ pp foo.bar && cat foo.bar
 foo
 /path/to/foo.bar
 bar
@@ -67,3 +67,150 @@ Lorem ipsum,
 dolor sit amet.
 </body>
 ~~~
+
+---
+
+To use a command **in the middle of a line** format the output around the rest of the text using `xargs` and `printf`
+~~~
+!! command | xargs -0 printf 'I am using the ouput below\n-->%s<--\n'
+~~~
+
+---
+
+Say one has three auxiliary texts and one main file, **pp** can be called from within the `main.md` file and so compile the incoming files before importing them.
+
+~~~
+~$ cat header_main.md
+---
+title: MAIN
+subtitle: Generated with pp
+!! whoami | xargs -0 printf 'author: %s'
+!! date +%F | xargs -0 printf 'date: %s'
+---
+
+~$ cat body_main.md
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque bibendum, urna sed posuere egestas, mauris erat finibus dui, at convallis odio mi non velit.
+~$ cat footer_main.md
+---
+<center> [home](/index.md)
+!! date +%Y | xargs -0 printf '<center> Copyright (C) %s - by me </center>'
+~~~
+
+and the main file
+
+~~~
+~$ cat footer_main.md
+!! pp -f header_$IN
+!! cat header_$IN
+
+!! echo "$IN"
+==============
+!!# This is a comment for the unprocessed file and will be
+!!# removed by pp
+
+This file
+!! echo "($OUT)"
+is all about...
+
+!! figlet "$IN"
+
+
+Intro
+-----
+
+!! pp -f body_$IN
+!! cat "body_$IN"
+
+Project
+-------
+
+!! tree --charset=ascii
+
+* Past progress 
+
+!! git log -5 --pretty="%h %ar %B"
+
+* Tasks still left to do
+
+!! task next
+
+!! pp -f footer_$IN
+!! cat footer_$IN
+~~~
+By running the **pp** on `main.md` one can specify to run pp on a file before outputting the text in the file. The finished result will be:
+
+~~~
+~$ pp -f main.md && cat main.md
+---
+title: MAIN
+subtitle: Generated with pp
+author: username
+date: 2020-04-17
+---
+
+main.md
+==============
+
+
+
+This file
+(main.md)
+is all about...
+
+                 _                       _ 
+ _ __ ___   __ _(_)_ __    _ __ ___   __| |
+| '_ ` _ \ / _` | | '_ \  | '_ ` _ \ / _` |
+| | | | | | (_| | | | | |_| | | | | | (_| |
+|_| |_| |_|\__,_|_|_| |_(_)_| |_| |_|\__,_|
+                                           
+
+
+Intro
+-----
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque bibendum, urna sed posuere egestas, mauris erat finibus dui, at convallis odio mi non velit.
+
+Project
+-------
+
+.
+|-- body_main.md
+|-- footer_main.md
+|-- header_main.md
+|-- main.md
+`-- main.md
+
+0 directories, 9 files
+
+* Past progress 
+
+b30905f 2 hours ago Added more latin
+
+c8b0c4c 2 hours ago Made the copyright date automatically find the year
+
+ca52330 4 hours ago Added a little figlet script
+
+23326b7 4 hours ago Thought about adding figlet text
+
+05b2007 5 hours ago Initial commit
+
+* Tasks still left to do
+
+
+ID Age Due  Description                             
+-- --- ---- --------------------------------------------------
+ 5 9mo -8mo Is pp a good name for a program?? Answer soon
+ 1 11w      Start writing bash scripts not POSIX shell
+ 2 6mo      Go for a run
+ 3 4mo      Default task
+            YAML header time
+ 4 4mo      Need to start thinking about use of fake latin in body
+
+5 tasks
+
+---
+<center> [home](/index.md)
+<center> Copyright (C) 2020 - by me </center>
+~~~
+
+All in a couple simple commands. Every time the command is run the information input is new.
