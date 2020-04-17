@@ -108,7 +108,7 @@ process(){
     # shell command and replacing the line with the STDOUT output.
     # Prints information about the process and avoids overwriting.	
 	# 
-	COMMAND='/^!!/{s/\$IN/'${FILE}'/g;s/\$OUT/'${OUT-$FILE}'/g};s/^!!(.*)$/\1/e'
+	COMMAND='/^!!/{s/\$IN/'${FILE}'/g;s/\$OUT/'${OUT-$FILE}'/g;/^!![[:blank:]]*#/d};s/^!!(.*)$/\1/e'
 	# Counts number of matches
 	NUM=$( sed -n '/^!!/p' "$FILE" | wc -l | sed 's/^[[:blank:]]*//' )
 
