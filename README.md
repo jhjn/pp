@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://i.postimg.cc/jqDnvm4b/pplogo.png" width="50%">
+<img src="https://i.postimg.cc/jqDnvm4b/pplogo.png" width="35%">
 </p>
 <p align="center">
 <b>The text preprocessor</b>
