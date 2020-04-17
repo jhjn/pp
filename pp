@@ -1,5 +1,5 @@
 #!/bin/sh
-#  pp - text preprocessor
+#  pp - the text preprocessor
 #  Copyright (C) 2020  Joe Jenne
 #  
 #  This program is free software: you can redistribute it and/or modify
