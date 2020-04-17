@@ -1,5 +1,7 @@
 <p align="center">
 <img src="https://i.postimg.cc/jqDnvm4b/pplogo.png" width="50%">
+</p>
+<p align="center">
 <b>The text preprocessor</b>
 </p>
 
@@ -7,9 +9,9 @@
 
 Intro
 -----
-There is one simple rule and two variables when running **pp** with a large degree of flexibility.
+This processor has one simple rule and two variables that together offer a large degree of flexibility.
 
-**Rule**: Whenever the mark `!!` begins a line in the input file, the following text until the end of the line will be evaluated in `sh` and the output - `/dev/stdout` - will replace the marked line in the output file.
+**Rule**: Beginning a line with `!!` indicates a shell one-liner follows. All text until a newline will be evaluated with `sh` and the output - `/dev/stdout` - will replace the marked line in the output file. Without specifying an output, the input file is overwritten.
 
 **Variables**: `$IN` and `$OUT` will be replaced by the names of the input text file and output text file respectively *before* the command is run on all marked lines.
 
@@ -27,6 +29,8 @@ bar
 
 ~~~
 
+Use the manual `man pp` for more information.
+
 Install
 -------
 **Dependencies**
@@ -39,8 +43,6 @@ cd pp
 ln -s pp /usr/local/bin
 ln -s pp.1 /usr/local/share/man/man1
 ~~~
-
-Use the manual `man pp` for more information.
 
 Examples
 --------
