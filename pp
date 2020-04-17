@@ -108,22 +108,23 @@ process(){
     # shell command and replacing the line with the STDOUT output.
     # Prints information about the process and avoids overwriting.	
 	# 
-	COMMAND='/^!!/{s/\$IN/'${FILE}'/g;s/\$OUT/'${OUT}'/g};s/^!!(.*)$/\1/e'
+	COMMAND='/^!!/{s/\$IN/'${FILE}'/g;s/\$OUT/'${OUT-$FILE}'/g};s/^!!(.*)$/\1/e'
 	# Counts number of matches
 	NUM=$( sed -n '/^!!/p' "$FILE" | wc -l | sed 's/^[[:blank:]]*//' )
 
 	# Run SED -i or >output.file dependent on if output.file is 
 	# inputfile) or something else)
+	# Don't output text if FORCED (to be quiet)
 	case "$OUT" in
 		"")
 			[ "$FORCED" != true ] && printf '\033[1;33m-->  \033[31m%s\033[m will be overwritten with the processed copy\nPress Enter to continue or Ctrl+c to abort now...' "'$FILE'" && read -r _
 			sed -i -r "$COMMAND" "$FILE"
-			printf 'Processed %s->%s: with %s shell expansion(s)\n' "$FILE" "$FILE" "$NUM"
+			[ "$FORCED" != true ] && printf 'Processed %s->%s: with %s shell expansion(s)\n' "$FILE" "$FILE" "$NUM"
 
 			;;
 		*) 
 			sed -r "$COMMAND" "$FILE" > "$OUT"
-			printf 'Processed %s->%s: with %s shell expansion(s)\n' "$FILE" "$OUT" "$NUM"
+			[ "$FORCED" != true ] && printf 'Processed %s->%s: with %s shell expansion(s)\n' "$FILE" "$OUT" "$NUM"
 			;;
 	esac
 }
@@ -132,7 +133,7 @@ usage() {
 	# Print help message
 	#
 	printf '\nUsage: %s [-f] INPUT [-o OUTPUT]\n' "${0##*/}"
-	printf '  -f                        Force overwriting of files\n'
+	printf '  -f                        Force overwriting of files and silence output\n'
 	printf '  -h                        Display help\n'
 	printf '  -o                        Processed as OUTPUT, if left blank the input file\n                            will be processed itself\n'
 	printf '  -v                        Print version information\n'
