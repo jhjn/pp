@@ -40,8 +40,8 @@ To download and install, the recommended path for system wide usage is given bel
 ~~~
 git clone https://github.com/jhjn/pp
 cd pp
-ln -s pp /usr/local/bin
-ln -s pp.1 /usr/local/share/man/man1
+ln -s ./pp /usr/local/bin
+ln -s ./pp.1 /usr/local/share/man/man1
 ~~~
 To add a little Vim "plugin" to instantly format and update your document when you type `<leader>p` run:
 ~~~
