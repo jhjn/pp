@@ -43,6 +43,10 @@ cd pp
 ln -s pp /usr/local/bin
 ln -s pp.1 /usr/local/share/man/man1
 ~~~
+To add a little Vim "plugin" to instantly format and update your document when you type `<leader>p` run:
+~~~
+echo 'nnoremap <leader>p :w! \| :!pp -f %<CR>:e!<Enter>' >> $HOME/.vimrc
+~~~
 
 Examples
 --------
