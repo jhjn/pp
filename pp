@@ -30,7 +30,7 @@ args(){
 	#
 	# Parse either side of input-file hvf(maybe o) on one side, 
 	# o on the other
-	while getopts :hqvf-o: _opt; do
+	while getopts :hqvf-:o: _opt; do
 		case $_opt in
 			-) case "$OPTARG" in
 				force) FORCED=true ;;
