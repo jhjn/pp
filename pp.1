@@ -8,6 +8,7 @@ pp \- the text preprocessor
 .br
 .B pp
 [\fB\-f\fR|\fB\-\-force\fR]
+[\fB\-q\fR|\fB\-\-quiet\fR]
 .IR input-file
 [\fB\-o\fR \fIoutput-file\fR]
 .SH DESCRIPTION
@@ -17,18 +18,21 @@ preprocesses text files before final compilation (e.g using pandoc) by replacing
 \fIGNU\fR SED is required for this program as it provides the \fBe\fR command for evaluating the contents of the \fIpattern space\fR.
 .SH OPTIONS
 .TP
-.BR \-v ", " \-\-version
-Print version information and exit.
-.TP
-.BR \-h ", " \-\-help
-Print usage information and exit.
-.TP
 .BR \-f ", " \-\-force
 Force overwriting of output onto input file if no output file is given. Otherwise will prompt. 
 Force overwriting of output file if it already exists. Otherwise will exit. In addition force the output to be quiet for use in scripts.
 .TP
+.BR \-h ", " \-\-help
+Print usage information and exit.
+.TP
 \fB\-o\fR \fIoutput-file\fR
 Use the specified file for the output text.
+.TP
+.BR \-q ", " \-\-quiet
+Suppress all output and automatically implies '\fI\-f\fR' too, silencing need for input.
+.TP
+.BR \-v ", " \-\-version
+Print version information and exit.
 .SH SYNTAX
 .SS !!
 .PP
@@ -71,6 +75,24 @@ foo
 bar
 bar
 \f[R]
+.fi
+.SS #tag and $tag
+.PP
+If a line ends with a \fI#\fR followed by a single alpha-numeric character '\fBchar\fR' (i.e. 0-9, a-z, A-Z) then that line number will be stored as \fI$\fR\fBchar\fR. The reference \fI$'char'\fR will be expanded to the line number before any shell evaluation occurs. For instance on file \fItext\fR, if running `grep -c '!!' text` returns:
+.IP
+.nf
+\f[C]36:!! echo 'Hello World!' #a
+86:!! echo 'Hello line $a.'\f[R]
+.PP
+.fi
+then after passing it through \fBpp\fR, the file on line 36 and 86 becomes,
+.nf
+.IP
+ ...
+\f[C]Hello World!
+ ...
+Hello line 36.\f[R]
+ ...
 .fi
 .SH EXAMPLES 
 .PP 
