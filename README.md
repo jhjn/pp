@@ -30,7 +30,7 @@ This processor has one simple rule, two variables and line tags that together of
 ~~~
 ~$ cat foo.bar
 foo
-! echo "word"
+!! echo "word"
 bar
 !! echo "${PWD}$IN" #a
 baz
