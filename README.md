@@ -39,7 +39,7 @@ word
 bar
 /path/to/foo.bar
 baz
-7
+6
 
 ~~~
 
