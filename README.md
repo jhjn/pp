@@ -2,29 +2,26 @@
 <img src="https://i.postimg.cc/jqDnvm4b/pplogo.png" width="35%">
 </p>
 <p align="center">
-<b>The text preprocessor</b>
+<b>The POSIX sh text preprocessor</b>
 </p>
 
-**pp** is a [shellcheck](https://github.com/koalaman/shellcheck) linted POSIX sh script that replaces marked shell script with its output. It is a single executable script, under 100 sloc, that is super simple to use.
+**pp** is a [shellcheck](https://github.com/koalaman/shellcheck) linted, script written in ~50 s.l.o. POSIX sh that expands inline macros - also written in shell. **pp** is a much simpler processor than the *well-documented* [m4](https://www.gnu.org/software/m4/m4.html) without all the new commands and variables to learn. This program also adheres to the UNIX philosophy: doing one thing and doing it well, accepting stdin and writing to stdout. It is super easy and flexible to use, check out the [examples](#examples).
 
 **Uses Include**:
 
-* Preprocess text files before their final compilation (e.g. using [pandoc](https://github.com/jgm/pandoc)) extending markdown to add anything that can appear in STDOUT.
+* Preprocessing text files before their final compilation (e.g. pipe into pandoc [pandoc](https://github.com/jgm/pandoc) `pp file.md | pandoc -o file.pdf`) extending markdown to add anything that may appear in stdout.
 * Writing a book/website in markdown. Import text from different files, using a common header/footer while substituting relevant information (see [examples](#examples))
 * Don't leave your editor, enter a command on a line in your file, in vim tap in the shortcut (see [install](#install)) and it'll expand. `!! which python` expands to `/usr/local/opt/python/libexec/bin/python`.
 * Create always up to date, dynamic text files. Want a date at the top of the file that is always correct? A short up to date git log statement? Enter the commands and every time **pp** is run on the file, the output is up to date.
-> ...anything your command line can do...
-> because it **is** your *command*... line
+* Basically anything you do in the command line can automatically be filled in - in your text file.
 
 Intro
 -----
-This processor has one simple rule, two variables and line tags that together offer a large degree of flexibility.
+This processor has one simple rule and three variables that together offer a large degree of flexibility.
 
-**Rule**: Beginning a line with `!!` indicates a shell one-liner follows. All text until a newline will be evaluated with `sh` and the output - `/dev/stdout` - will replace the marked line in the output file. Without specifying an output, the input file is overwritten.
+**Rule**: Beginning a line with `!!` marks that the rest of the line (until newline) is a shell command to evaluate. The output then replaces the marked line when written to stdout.
 
-**Variables**: `$IN` and `$OUT` will be replaced by the names of the input text file and output text file respectively *before* the commands are run.
-
-**Tags**: Ending a line with a `#` followed by one of the 62 alpha-numeric characters tags that line's line number. A reference anywhere using `$` followed by the same tag character is replaced by the tagged line number *before* the commands are run.
+**Variables**: `$FILE, $line and $ln` are preset variables when appearing on marked lines. `$FILE` is the name of the marked up file. `$line` is a variable containing the contents of the marked line after the initial `!!` and any whitespace that may follow. `ln` is the line number of the current marked command.
 
 **Example**:
 ~~~
@@ -32,17 +29,17 @@ This processor has one simple rule, two variables and line tags that together of
 foo
 !! echo "word"
 bar
-!! echo "${PWD}$IN" #a
+!! echo "${PWD}/${FILE}"
 baz
-!! echo "$a$ 
+!! echo "$ln"
 
-~$ pp foo.bar && cat foo.bar
+~$ pp foo.bar
 foo
 word
 bar
 /path/to/foo.bar
 baz
-4
+7
 
 ~~~
 
@@ -50,21 +47,16 @@ Use the manual `man pp` for more information.
 
 Install
 -------
-**Dependencies**
-- GNU SED 4.2+ - for macOS users `brew install gnu-sed`
+Clone the repository and enter, then run the install script which will prompt you if the default install location is correct. Edit the file if need be for `pp` in your `$PATH` and `pp.1` in your `$MANPATH`.
 
-To download and install put `pp` executable in your `$PATH` and `pp.1` in your `$MANPATH`.
-
-I.e. (recommended given no existing file `pp`) 
 ~~~
 git clone https://github.com/jhjn/pp
 cd pp
-ln -s ./pp /usr/local/bin
-ln -s ./pp.1 /usr/local/share/man/man1
+./install.sh
 ~~~
-To add a little Vim shortcut to instantly format and update your document when you type `<leader>p` run:
+To add a little Vim shortcut to open the expanded form in a new vim window when you type `<leader>p` run:
 ~~~
-echo 'nnoremap <leader>p :w! \| :!pp -q %<CR>:e!<Enter>' >> $HOME/.vimrc
+echo 'nnoremap <leader>p :w! \| !pp % \| vim -<Enter>' >> $HOME/.vimrc
 ~~~
 
 Examples
@@ -73,14 +65,14 @@ Examples
 To import an html body, `body.txt`, and title an html document with the name of the file `home.html`, the input file would look like:
 ~~~
 <title>
-!! echo "$IN" | sed -r 's/\..*//'
+!! echo "${FILE##*/}"
 </title>
 <h1>Hello World!</h1>
 <body>
 !! cat "body.txt"
 </body>
 ~~~
-by running `pp -q home.html` the file becomes,
+the output of `pp home.html` is then,
 ~~~
 <title>
 home
@@ -99,22 +91,26 @@ Format the output of your line by using `xargs -0` into a `printf` command. Wher
 !! command | xargs -0 printf 'foo %s bar\n'
 ~~~
 ---
-### Want to keep your command in the line? Use `sed &&`.
+### Want to keep your command in the line? Use `echo &&`.
 To keep the command line (e.g. on line 42) when run, begin your command with:
 ~~~
-!! sed 42!d $IN && command
+!! echo '!! '"$line" && command
 ~~~
-To not have to worry about line number you can use tags and a self replicating sed script, it's a little longer. Tag your line at the end so the line number can be referenced. `t` is just an example tag character.
+Make sure the exclamation marks aren't in double quotes where in shells the have a different meaning.
+
+---
+### Want comments in your markdown file? Use `!!#`
+The shell will ignore whatever is between a `#` and a newline.
 ~~~
-!! sed '$t!d;s/$t!/$''t!/g' $IN && command; #t
+!!# This is a comment and will only be visible before processing
 ~~~
 
 ---
 ### Want to chain multiple preprocesses together? Use `pp`.
-There are three auxiliary texts `{header,footer,body}_main.md` and one main file `main.md`, **pp** can be called from within `main.md` to compile the auxiliary files before importing each one in the appropriate location.
+There are three auxiliary texts `{header,footer,body}.md` and one main file `main.md`, **pp** can be called from within `main.md` to compile the auxiliary files before importing each one in the appropriate location.
 
 ~~~
-~$ cat header_main.md
+~$ cat header.md
 ---
 title: MAIN
 subtitle: Generated with pp
@@ -122,11 +118,12 @@ subtitle: Generated with pp
 !! date +%F | xargs -0 printf 'date: %s'
 ---
 
-~$ cat body_main.md
+~$ cat body.md
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque bibendum, urna sed posuere egestas, mauris erat finibus dui, at convallis odio mi non velit.
-~$ cat footer_main.md
+
+~$ cat footer.md
 ---
-<center> [home](/index.md)
+<center> [home](/index.md) </center>
 !! date +%Y | xargs -0 printf '<center> Copyright (C) %s - by me </center>'
 ~~~
 
@@ -134,26 +131,26 @@ and the main file
 
 ~~~
 ~$ cat footer_main.md
-!! pp -f header_$IN
-!! cat header_$IN
+!! pp header.md > header_${FILE}
+!! cat header_${FILE}
 
-!! echo "$IN"
+!! echo "$FILE"
 ==============
 !!# This is a comment for the unprocessed file and will be
 !!# removed by pp
 
 This file
-!! echo "($OUT)"
+!! echo "(${FILE})"
 is all about...
 
-!! figlet "$IN"
+!! figlet "$FILE"
 
 
 Intro
 -----
 
-!! pp -f body_$IN
-!! cat "body_$IN"
+!! pp body.md > body_${FILE}
+!! cat "body_${FILE}"
 
 Project
 -------
@@ -168,13 +165,13 @@ Project
 
 !! task next
 
-!! pp -f footer_$IN
-!! cat footer_$IN
+!! pp footer.md > footer_${FILE}
+!! cat footer_${FILE}
 ~~~
-By running the **pp** on `main.md` one can specify to run pp on a file before outputting the text in the file. The finished result will be:
+By running the **pp** on `main.md` it has already been specified in the text that pp will run on the auxiliary files before they are imported into the text. The result will look like:
 
 ~~~
-~$ pp -f main.md && cat main.md
+~$ pp main.md
 ---
 title: MAIN
 subtitle: Generated with pp
@@ -243,8 +240,11 @@ ID Age Due  Description
 5 tasks
 
 ---
-<center> [home](/index.md)
+<center> [home](/index.md) </center>
 <center> Copyright (C) 2020 - by me </center>
 ~~~
 
 All in a couple simple commands. Every time the command is run the output is up to date!
+
+---
+Submit a pull request for this README if you can think of a super cool use of this preprocessor.

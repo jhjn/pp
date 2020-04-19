@@ -1,42 +1,30 @@
 .TH "PP" "1" "April 2020" "preprocessor" "pp manual"
 .SH NAME
-pp \- the text preprocessor
+pp \- the POSIX sh text preprocessor
 .SH SYNOPSIS
 .B pp
 [\fB\-v\fR|\fB\-\-version\fR] 
 [\fB\-h\fR|\fB\-\-help\fR]
 .br
 .B pp
-[\fB\-f\fR|\fB\-\-force\fR]
-[\fB\-q\fR|\fB\-\-quiet\fR]
 .IR input-file
-[\fB\-o\fR \fIoutput-file\fR]
 .SH DESCRIPTION
 .B pp
-preprocesses text files before final compilation (e.g using pandoc) by replacing marked shell one\-liner commands with their evaluated STDOUT.
+preprocesses text files, expanding macros written in shell. This can be used before compiling to its final format (e.g. piping into pandoc). The marked shell commands (see \fISYNTAX\fR) are replaced by their evaluated output when written to the standard output. The input text can be read from standard input or from a file as the first argument.
 .PP
-\fIGNU\fR SED is required for this program as it provides the \fBe\fR command for evaluating the contents of the \fIpattern space\fR.
+.B pp
+is also written exclusively in POSIX sh so there are no dependencies.
 .SH OPTIONS
-.TP
-.BR \-f ", " \-\-force
-Force overwriting of output onto input file if no output file is given. Otherwise will prompt. 
-Force overwriting of output file if it already exists. Otherwise will exit. In addition force the output to be quiet for use in scripts.
 .TP
 .BR \-h ", " \-\-help
 Print usage information and exit.
-.TP
-\fB\-o\fR \fIoutput-file\fR
-Use the specified file for the output text.
-.TP
-.BR \-q ", " \-\-quiet
-Suppress all output and automatically implies '\fI\-f\fR' too, silencing need for input.
 .TP
 .BR \-v ", " \-\-version
 Print version information and exit.
 .SH SYNTAX
 .SS !!
 .PP
-Shell commands to be processed are on lines beginning with two exclamation marks \fB!!\fR. When \fBpp\fR is run on the file the text following the \fB!!\fR and before a newline is evaluated in \fIsh\fR. Therefore:
+Shell commands to be processed are on lines beginning immediately with two exclamation marks \fB!!\fR. When \fBpp\fR is run on the file the text following the \fB!!\fR and before a newline is evaluated in \fIsh\fR. Therefore:
 .IP
 .nf
 \f[C]
@@ -53,16 +41,14 @@ Insert Text
 bar
 \f[R]
 .fi
+.SS $FILE, $line and $ln
 .PP
-There may be whitespace after the intial \fB!!\fR however no whitespace may separate the \fB!!\fR from the beginning of the line.
-.SS $IN and $OUT
-.PP
-In addition, there are two special variables defined in the processor, \fB$IN\fR and \fB$OUT\fR corresponding to the names of the \fIinput\fR file, and the \fIoutput\fR file respectively. These are replaced with the names of the files relative to the \fBPWD\fR \fIbefore\fR the shell command is evaluated. These can be used to reference the file or it's destination in any of the one\-liners, and can be chained recursively. As such:
+There are three useful variables for writing these macros. \fB$FILE\fR is the name of the file relative to the users \fBPWD\fR, the basename can be found with `\fI${FILE##*/}\fR'. This is only readable when not receiving text from standard input. \fB$line\fR is the contents of the local line with \fB!!\fR and leading whitespace removed. \fB$ln\fR is the local line number. These can be used for more complex operations and file manipulation.
 .IP
 .nf
 \f[C]
 foo
-!! cat "$IN"
+!! cat "$FILE"
 bar
 \f[R]
 .PP
@@ -71,28 +57,10 @@ becomes,
 \f[C]
 foo
 foo
-!! cat "$IN"
+!! cat "$FILE"
 bar
 bar
 \f[R]
-.fi
-.SS #tag and $tag
-.PP
-If a line ends with a \fI#\fR followed by a single alpha-numeric character '\fBchar\fR' (i.e. 0-9, a-z, A-Z) then that line number will be stored as \fI$\fR\fBchar\fR. The reference \fI$'char'\fR will be expanded to the line number before any shell evaluation occurs. For instance on file \fItext\fR, if running `grep -c '!!' text` returns:
-.IP
-.nf
-\f[C]36:!! echo 'Hello World!' #a
-86:!! echo 'Hello line $a.'\f[R]
-.PP
-.fi
-then after passing it through \fBpp\fR, the file on line 36 and 86 becomes,
-.nf
-.IP
- ...
-\f[C]Hello World!
- ...
-Hello line 36.\f[R]
- ...
 .fi
 .SH EXAMPLES 
 .PP 
@@ -101,19 +69,15 @@ To import an html body, \fIbody.txt\fR, and title an html document with the name
 .nf
 \f[C]
 <title>
-!! echo "$IN" | sed -r 's/\..*$//'
+!! echo "${FILE%%.*}"
 </title>
 <h1>Hello World!</h1>
 <body>
-!! cat "body.txt"
+!! cat "/path/to/body.txt"
 </body>
 \f[R]
 .PP
-executing \fBpp\fR:
-.IP
-pp home.html
-.PP
-the file \fIhome.html\fR becomes,
+running `\fBpp\fR home.html' gives the output,
 .IP
 \f[C]
 <title>
