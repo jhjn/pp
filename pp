@@ -77,7 +77,7 @@ process(){
 				line="${line#${line%%[![:space:]]*}}"
 				eval " $line" 2>/dev/null|| 
 				die "EVAL_ERR" "LINE $ln: evaluation error";;
-			*) echo "$line";;
+			*) printf '%s\n' "$line";;
 		esac
 	done < "$FILE"
 }
