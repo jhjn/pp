@@ -17,7 +17,7 @@
 
 version() {
     echo "pp - preprocessing script"
-    echo "version: 0.1.0"
+    echo "version: 0.2.0"
     echo "license: GNU General Public License, version 3"
 }
 
@@ -26,6 +26,14 @@ die() {
     #
     printf '\033[1;33m%s \033[1;36m%s\033[m %s\n' "${3-!>}" "$1" "$2" >&2
     [ -z "$3" ] && exit 1
+}
+
+middle() {
+	local line=$1
+	line="${line#*\!{}}" # Trim non-greedy up to/inc. !{
+	line="${line%\}\!*}" # Trim non-greedy back to/inc. }!
+
+	eval "$line" 2>/dev/null || die "EVAL_ERR" "LINE $ln: evaluation error"
 }
 
 usage() {
@@ -37,6 +45,8 @@ usage() {
     echo "Syntax:"
     echo "  * A line beginning with !! has the following text evaluated"
     echo "    as a shell command."
+	echo "  * A line containing !{...}! has the section replaced by the output"
+	echo "    of command '...'."
     echo '  * $FILE is the filename, relative to PWD'
     echo '  * $line refers to the contents of the line itself'
     echo '  * $ln is the current line number'
@@ -77,6 +87,8 @@ process(){
                 line="${line#${line%%[![:space:]]*}}"
                 eval "$line" 2>/dev/null ||
                 die "EVAL_ERR" "LINE $ln: evaluation error";;
+			*!{*\}!*) printf '%s%s%s\n' "${line%%\!{*}" "$(middle "$line")" \
+				"${line##*\}\!}";;
             *) echo "$line";;
         esac
     done < "$FILE"
