@@ -24,24 +24,22 @@ This processor has one simple rule and three variables that together offer a lar
 **Variables**: `$FILE, $line and $ln` are preset variables when appearing on marked lines. `$FILE` is the name of the marked up file. `$line` is a variable containing the contents of the marked line after the initial `!!` and any whitespace that may follow. `ln` is the line number of the current marked command.
 
 **Example**:
-~~~
-~$ cat foo.bar
+```diff
+-> cat foo.bar
 foo
 !! echo "word"
 bar
 !! echo "${PWD}/${FILE}"
 baz
 !! echo "$ln"
-
-~$ pp foo.bar
+-> pp foo.bar
 foo
 word
 bar
 /path/to/foo.bar
 baz
 6
-
-~~~
+```
 
 Use the manual `man pp` for more information.
 
