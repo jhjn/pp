@@ -23,7 +23,7 @@ SYNTAX
 ======
 !!
 : An input line beginning **!!** is replaced by the output of the evaluated _sh_ command that follows. Therefore,
-```	
+```
 foo
 !! echo "Insert Text"
 bar
@@ -37,7 +37,7 @@ bar
 
 !{...}!
 : A section marked out with the above command brackets is replaced with the evaluated command '...'. Therefore,
-```	
+```
 On !{date}! it is my birthday
 ```
 becomes,
@@ -121,7 +121,7 @@ Markdown
 The stdin-stdout model is well suited to chains of processing. For instance, a markdown file could be processed using awk, piped into **pp** and finally compiled into html. This pattern would look like:
 ```
 for file in $(ls *.md); do
-	awk -f $file | INPUT=$file pp | cmark > ${file%%.md}.html
+    awk -f $file | INPUT=$file pp | cmark > ${file%%.md}.html
 done
 ```
 
