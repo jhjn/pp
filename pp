@@ -5,11 +5,10 @@
 die() {
     echo "Error: $1" >&2
     echo "Usage: ${0##*/} v0.3.0" >&2
-    echo "  * ${0##*/} < input > output -- See pp(1) for details and examples" >&2
+    echo "  * ${0##*/} < input > output -- See pp(1)" >&2
     echo "Syntax:" >&2
-    echo "  * Lines beginning !! are replaced with the following text evaluated" >&2
-    echo "    as a shell command." >&2
-    echo "  * Variables: \$ln for line no. \$line for line itself" >&2
+    echo "  * Evaluate lines beginning !! as sh commands" >&2
+    echo "  * Variable \$line contains the line itself" >&2
     exit 1
 }
 
@@ -23,5 +22,5 @@ process(){
 }
 
 [ $# -ne 0 ] && die "No arguments are taken"
-[ -t 0 ] && die "No input text provided"
+[ -t 0 ] && die "Input text must be provided via stdin"
 process "/dev/stdin"
